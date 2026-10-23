@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
 class BuscadorDestino extends StatelessWidget {
-  const BuscadorDestino({super.key});
+  final ValueChanged<String>? onChanged;
+
+  const BuscadorDestino({super.key, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +16,9 @@ class BuscadorDestino extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: kBorde),
       ),
-      child: const TextField(
-        decoration: InputDecoration(
+      child: TextField(
+        onChanged: onChanged,
+        decoration: const InputDecoration(
           hintText: '¿A dónde vas?',
           hintStyle: TextStyle(color: kTextoSecundario),
           border: InputBorder.none,

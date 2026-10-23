@@ -6,7 +6,11 @@ import 'data/datasources/rutas_mock_data_source.dart';
 import 'data/repositories/rutas_repository_impl.dart';
 import 'domain/repositories/rutas_repository.dart';
 import 'domain/usecases/obtener_rutas_cercanas.dart';
+import 'presentation/viewmodels/app_view_models.dart';
 import 'presentation/viewmodels/inicio_view_model.dart';
+import 'presentation/viewmodels/reportes_view_model.dart';
+import 'presentation/viewmodels/rutas_admin_view_model.dart';
+import 'presentation/viewmodels/sesion_view_model.dart';
 
 /// Inyección de dependencias: aquí se arman las capas.
 void main() {
@@ -17,8 +21,13 @@ void main() {
   // Domain
   final obtenerRutasCercanas = ObtenerRutasCercanas(repositorio);
 
-  // Presentation
-  final inicioViewModel = InicioViewModel(obtenerRutasCercanas);
+  // Presentation (un solo juego de ViewModels vive toda la app: así el estado persiste)
+  final vms = AppViewModels(
+    inicio: InicioViewModel(obtenerRutasCercanas),
+    sesion: SesionViewModel(),
+    reportes: ReportesViewModel(),
+    rutasAdmin: RutasAdminViewModel(),
+  );
 
-  runApp(CamionesApp(inicioViewModel: inicioViewModel));
+  runApp(CamionesApp(vms: vms));
 }

@@ -1,32 +1,39 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../viewmodels/inicio_view_model.dart';
+import '../viewmodels/app_view_models.dart';
 import '../widgets/buscador_destino.dart';
 import '../widgets/etiqueta_hora_pico.dart';
 import '../widgets/lista_rutas.dart';
 import '../widgets/mapa_simulado.dart';
+import 'perfil_page.dart';
+import 'reportar_camion_page.dart';
+import 'reportes_page.dart';
 
+/// Dashboard del Alumno (mapa + rutas cercanas).
 class InicioPage extends StatefulWidget {
-  final InicioViewModel viewModel;
+  final AppViewModels vms;
 
-  const InicioPage({super.key, required this.viewModel});
+  const InicioPage({super.key, required this.vms});
 
   @override
   State<InicioPage> createState() => _InicioPageState();
 }
 
 class _InicioPageState extends State<InicioPage> {
-  int _indiceNav = 0;
-
   @override
   void initState() {
     super.initState();
-    widget.viewModel.cargarRutas();
+    widget.vms.inicio.cargarRutas();
+  }
+
+  void _abrir(Widget pagina) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => pagina));
   }
 
   @override
   Widget build(BuildContext context) {
+    final vms = widget.vms;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -37,11 +44,11 @@ class _InicioPageState extends State<InicioPage> {
               child: Stack(
                 children: [
                   const Positioned.fill(child: MapaSimulado()),
-                  const Positioned(
+                  Positioned(
                     top: 12,
                     left: 16,
                     right: 16,
-                    child: BuscadorDestino(),
+                    child: BuscadorDestino(onChanged: vms.inicio.filtrar),
                   ),
                   Positioned(
                     right: 16,
@@ -89,9 +96,9 @@ class _InicioPageState extends State<InicioPage> {
                     ),
                     Expanded(
                       child: ListenableBuilder(
-                        listenable: widget.viewModel,
+                        listenable: vms.inicio,
                         builder: (context, _) =>
-                            ListaRutas(viewModel: widget.viewModel),
+                            ListaRutas(viewModel: vms.inicio),
                       ),
                     ),
                   ],
@@ -104,7 +111,7 @@ class _InicioPageState extends State<InicioPage> {
       // Botón para reportar el paso del camión
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'reportar',
-        onPressed: () {},
+        onPressed: () => _abrir(ReportarCamionPage(viewModel: vms.reportes)),
         backgroundColor: kAcento,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.campaign_outlined),
@@ -114,15 +121,17 @@ class _InicioPageState extends State<InicioPage> {
       bottomNavigationBar: NavigationBar(
         backgroundColor: kSuperficie,
         indicatorColor: kAcento.withOpacity(0.25),
-        selectedIndex: _indiceNav,
-        onDestinationSelected: (i) => setState(() => _indiceNav = i),
+        selectedIndex: 0,
+        onDestinationSelected: (i) {
+          if (i == 1) _abrir(ReportesPage(viewModel: vms.reportes));
+          if (i == 2) _abrir(PerfilPage(vms: vms));
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.map_outlined),
             selectedIcon: Icon(Icons.map),
             label: 'Inicio',
           ),
-          NavigationDestination(icon: Icon(Icons.alt_route), label: 'Rutas'),
           NavigationDestination(icon: Icon(Icons.history), label: 'Reportes'),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
