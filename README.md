@@ -99,3 +99,4 @@ También se puede crear una cuenta nueva desde "Regístrate" eligiendo el rol.
 
 **Video del flujo de navegación: login → dashboard → lista → formulario**
 
+https://github.com/user-attachments/assets/5e867bff-b3cf-4f7e-9d2c-f705e4f7d07a
