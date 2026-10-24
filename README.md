@@ -95,8 +95,7 @@ También se puede crear una cuenta nueva desde "Regístrate" eligiendo el rol.
 
 ### Evidencia funcional
 **La app corriendo en el Samsung Galaxy A55 5G**
-![Foto equipo](screenshots/11-foto-equipo.png)
+![Foto equipo](screenshots/11-foto-equipo.jpg)
 
 **Video del flujo de navegación: login → dashboard → lista → formulario**
 
-PEGA-AQUI-EL-VIDEO
