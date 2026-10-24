@@ -51,7 +51,7 @@ También se puede crear una cuenta nueva desde "Regístrate" eligiendo el rol.
 ## 5. Demostración al docente
 
 - Dispositivo/emulador usado: **Samsung Galaxy A55 5G (Android)**. Probamos la app instalándola y ejecutándola directamente en el celular desde Flutter.
-- Fecha y modalidad de la demostración: [escribe aquí la fecha · presencial / videollamada]
+
 
 ## 6. Screenshots
 
