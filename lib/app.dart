@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_colors.dart';
-import 'presentation/pages/inicio_page.dart';
-import 'presentation/viewmodels/inicio_view_model.dart';
+import 'presentation/pages/splash_page.dart';
+import 'presentation/viewmodels/app_view_models.dart';
 
 class CamionesApp extends StatelessWidget {
-  final InicioViewModel inicioViewModel;
+  final AppViewModels vms;
 
-  const CamionesApp({super.key, required this.inicioViewModel});
+  const CamionesApp({super.key, required this.vms});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class CamionesApp extends StatelessWidget {
         colorScheme: const ColorScheme.dark(primary: kAcento),
         useMaterial3: true,
       ),
-      home: InicioPage(viewModel: inicioViewModel),
+      home: SplashPage(vms: vms),
     );
   }
 }
