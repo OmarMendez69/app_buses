@@ -72,11 +72,11 @@ class _ViajeDetallePageState extends State<ViajeDetallePage> {
       if (t.tipo == TipoTramo.camion) {
         final g = widget.vms.catalogo.cat.geos.where((g) => g.recorrido.id == t.recorrido!.id).firstOrNull;
         final puntos = g == null ? [t.desde, t.hasta] : g.linea.tramo(t.avanceSube, t.avanceBaja);
-        lineas.add(Polyline(points: puntos, color: colorDesdeHex(t.ruta!.color), strokeWidth: 6));
+        if (puntos.length >= 2) lineas.add(Polyline(points: puntos, color: colorDesdeHex(t.ruta!.color), strokeWidth: 6));
         todos.addAll(puntos);
       } else {
         final puntos = _caminatas[i]?.$3 ?? [t.desde, t.hasta];
-        lineas.add(Polyline(points: puntos, color: Colors.lightBlueAccent, strokeWidth: 4, pattern: StrokePattern.dotted()));
+        if (puntos.length >= 2) lineas.add(Polyline(points: puntos, color: Colors.lightBlueAccent, strokeWidth: 4, pattern: StrokePattern.dotted()));
         todos.addAll(puntos);
       }
     }
@@ -104,7 +104,7 @@ class _ViajeDetallePageState extends State<ViajeDetallePage> {
               centro: centro,
               zoom: 14,
               capas: [
-                PolylineLayer(polylines: lineas),
+                if (lineas.isNotEmpty) PolylineLayer(polylines: lineas),
                 MarkerLayer(markers: [
                   marcadorIcono(widget.origen.punto, Icons.trip_origin, Colors.blueAccent),
                   marcadorIcono(widget.destino.punto, Icons.location_on, kAcento),

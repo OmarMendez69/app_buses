@@ -225,7 +225,8 @@ class _EditorRecorridoPageState extends State<EditorRecorridoPage> {
                   userAgentPackageName: Config.userAgent,
                   tileBuilder: darkModeTileBuilder,
                 ),
-                PolylineLayer(polylines: [Polyline(points: _trazado, color: color, strokeWidth: 5)]),
+                // flutter_map no acepta líneas vacías: se dibuja hasta tener 2 puntos.
+                if (_trazado.length >= 2) PolylineLayer(polylines: [Polyline(points: _trazado, color: color, strokeWidth: 5)]),
                 if (_modo == _Modo.trazar)
                   CircleLayer(circles: [
                     for (final p in _trazado) CircleMarker(point: p, radius: 3, color: Colors.white),

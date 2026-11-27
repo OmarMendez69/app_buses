@@ -74,7 +74,7 @@ class _ParadaDetallePageState extends State<ParadaDetallePage> {
               zoom: 16,
               capas: [
                 capaRecorridos(rutas.map((r) => cat.geos.firstWhere((g) => g.recorrido.id == r.$2.id)), grosor: 4),
-                if (_caminata != null)
+                if (_caminata != null && _caminata!.length >= 2)
                   PolylineLayer(polylines: [Polyline(points: _caminata!, color: Colors.lightBlueAccent, strokeWidth: 4, pattern: StrokePattern.dotted())]),
                 MarkerLayer(markers: [marcadorParada(parada, tam: 22), if (yo != null && _caminata != null) marcadorYo(yo)]),
               ],

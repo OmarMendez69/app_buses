@@ -68,7 +68,7 @@ class _EnViajePageState extends State<EnViajePage> {
                     centro: e?.posicion ?? t.desde,
                     zoom: 16,
                     capas: [
-                      if (geo != null)
+                      if (geo != null && geo.linea.tramo(t.avanceSube, t.avanceBaja).length >= 2)
                         PolylineLayer(polylines: [
                           Polyline(points: geo.linea.tramo(t.avanceSube, t.avanceBaja), color: colorDesdeHex(t.ruta!.color), strokeWidth: 7),
                         ]),
