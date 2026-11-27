@@ -25,7 +25,7 @@ Con datos verificables, sin inventar tiempos de llegada.
 
 ---
 
-## 📑 Contenido
+## Contenido
 
 - [Video: navegación de la app](#-video-navegación-de-la-app)
 - [Descargar (Releases)](#️-descargar-releases)
@@ -42,7 +42,7 @@ Con datos verificables, sin inventar tiempos de llegada.
 
 ---
 
-## 🎥 Video: navegación de la app
+## Video: navegación de la app
 
 <!--
   CÓMO PONER EL VIDEO (elige una opción y borra este comentario):
@@ -70,7 +70,7 @@ En el video se recorre la app con los tres perfiles: **visitante**, **usuario** 
 
 ---
 
-## ⬇️ Descargar (Releases)
+## Descargar (Releases)
 
 La app para Android se publica en **[Releases](../../releases/latest)**.
 
@@ -101,7 +101,7 @@ Antes de compilar, sube `version:` en `pubspec.yaml` (p. ej. `1.0.1+2`) para que
 
 ---
 
-## 💡 El problema y nuestra propuesta
+## El problema y nuestra propuesta
 
 En Dolores Hidalgo no existe información pública y confiable del transporte urbano: las rutas se conocen de boca en boca, los horarios cambian y los desvíos no se avisan. Las unidades **no tienen GPS**, así que una app que prometa "llega en 5 minutos" estaría inventando.
 
@@ -117,7 +117,7 @@ En Dolores Hidalgo no existe información pública y confiable del transporte ur
 
 ---
 
-## 👥 Perfiles
+## Perfiles
 
 | Perfil | Pantalla principal | Qué puede hacer |
 | --- | --- | --- |
@@ -129,47 +129,47 @@ Toda cuenta nueva es **Usuario**; solo un administrador puede asignar el rol de 
 
 ---
 
-## ✨ Funciones
+## Funciones
 
 ### Para moverse por la ciudad
-- 🗺️ **Mapa** (OpenStreetMap) con las rutas y paradas cercanas a ti.
-- 🧭 **Planificador de viaje**: rutas directas o con un transbordo, tramos a pie por calles reales y tiempo como rango. Como el camión se para donde le hacen la mano, te dice el punto exacto del recorrido donde tomarlo, no solo la parada registrada.
-- 🔔 **"Avísame cuando llegue"**: sigue tu posición con el GPS de tu teléfono (la ubicación no sale de él) y vibra 300 m antes de tu bajada.
-- 🟢 **Estado del servicio**: "En servicio · cada 10–15 min" o "Terminó por hoy · mañana inicia 6:00", con calendario de días festivos.
-- ⏰ **Hora pico** = horarios de alta demanda: entradas y salidas de escuelas, cambios de turno y tianguis cerca de la ruta.
-- 📍 **"¿Qué rutas pasan por aquí?"** desde cualquier punto del mapa.
-- 🚶 **Comparar contra caminar** cuando el destino está cerca.
+-  **Mapa** (OpenStreetMap) con las rutas y paradas cercanas a ti.
+-  **Planificador de viaje**: rutas directas o con un transbordo, tramos a pie por calles reales y tiempo como rango. Como el camión se para donde le hacen la mano, te dice el punto exacto del recorrido donde tomarlo, no solo la parada registrada.
+-  **"Avísame cuando llegue"**: sigue tu posición con el GPS de tu teléfono (la ubicación no sale de él) y vibra 300 m antes de tu bajada.
+-  **Estado del servicio**: "En servicio · cada 10–15 min" o "Terminó por hoy · mañana inicia 6:00", con calendario de días festivos.
+-  **Hora pico** = horarios de alta demanda: entradas y salidas de escuelas, cambios de turno y tianguis cerca de la ruta.
+-  **"¿Qué rutas pasan por aquí?"** desde cualquier punto del mapa.
+-  **Comparar contra caminar** cuando el destino está cerca.
 
 ### Para estar enterado
-- 📢 **Avisos oficiales con push** instantáneo: desvíos, suspensiones y cambios de horario. Los cambios de recorrido y horario se avisan solos.
-- 🌙 **Aviso de último camión** de las rutas que sigues.
-- 💾 **Viajes guardados** con recordatorio a la hora de salir.
-- 📤 **Compartir viaje** por WhatsApp.
+-  **Avisos oficiales con push** instantáneo: desvíos, suspensiones y cambios de horario. Los cambios de recorrido y horario se avisan solos.
+-  **Aviso de último camión** de las rutas que sigues.
+-  **Viajes guardados** con recordatorio a la hora de salir.
+-  **Compartir viaje** por WhatsApp.
 
 ### Para reconocer el camión y pagar
-- 📸 **Cómo reconocerlo**: foto de la unidad, letrero del parabrisas y colores.
-- 💵 **Tarifas**: general, estudiante e INAPAM, con su fuente.
+-  **Cómo reconocerlo**: foto de la unidad, letrero del parabrisas y colores.
+-  **Tarifas**: general, estudiante e INAPAM, con su fuente.
 
 ### Comunidad
-- 📣 **Reportes rápidos** (retraso, unidad llena, desvío, no pasó, incidente) en dos toques; se muestran 6 horas.
-- 💬 **Tablón** con preguntas, objetos perdidos, comentarios, "útil" y denuncias.
-- 🛡️ **Moderación**: con 3 denuncias el contenido se oculta solo, y el admin decide.
+-  **Reportes rápidos** (retraso, unidad llena, desvío, no pasó, incidente) en dos toques; se muestran 6 horas.
+-  **Tablón** con preguntas, objetos perdidos, comentarios, "útil" y denuncias.
+-  **Moderación**: con 3 denuncias el contenido se oculta solo, y el admin decide.
 
 ### Extras
-- 📱 **Widget** de Android con tus rutas.
-- 🌐 **Español e inglés**.
-- 📶 **Funciona sin conexión** con los datos guardados.
+-  **Widget** de Android con tus rutas.
+-  **Español e inglés**.
+-  **Funciona sin conexión** con los datos guardados.
 
 ### Panel de administración
-- ✅ **Pasos para publicar una ruta**: checklist de lo que falta (trazado, paradas, horario) antes de activarla.
-- ✏️ **Editor de recorrido**: trazado tocando el mapa o importando un **GPX**, y paradas en orden con arrastrar y soltar.
-- 🕐 **Horarios por franjas** y tipo de día, sin empalmes.
-- 📊 **Reportes de la comunidad** agrupados por ruta, con cuántas personas distintas reportan y un botón para convertirlos en aviso oficial.
-- 👤 **Usuarios** (roles y suspensión) y **bitácora** de cambios.
+-  **Pasos para publicar una ruta**: checklist de lo que falta (trazado, paradas, horario) antes de activarla.
+-  **Editor de recorrido**: trazado tocando el mapa o importando un **GPX**, y paradas en orden con arrastrar y soltar.
+-  **Horarios por franjas** y tipo de día, sin empalmes.
+-  **Reportes de la comunidad** agrupados por ruta, con cuántas personas distintas reportan y un botón para convertirlos en aviso oficial.
+-  **Usuarios** (roles y suspensión) y **bitácora** de cambios.
 
 ---
 
-## 🗂️ Modelo de datos
+##  Modelo de datos
 
 20 tablas en PostgreSQL con valores controlados (`enum`), integridad referencial, restricciones de dominio y **RLS** en todas las tablas.
 
@@ -189,21 +189,21 @@ erDiagram
     RUTA ||--o{ FAVORITO : "seguida por"
 ```
 
-📄 **[Ver el modelo completo y su relación con el modelo de dominio original →](docs/MODELO_DE_DATOS.md)**
+ **[Ver el modelo completo y su relación con el modelo de dominio original →](docs/MODELO_DE_DATOS.md)**
 Ahí se explica entidad por entidad (Usuario, Ruta, Parada, RutaParada, HoraPico, Reporte, Reputación) y cómo se atendió cada una de las **observaciones del esquema**.
 
 ---
 
-## 🏗️ Arquitectura
+##  Arquitectura
 
 ```mermaid
 flowchart LR
-    subgraph Telefono["📱 App Flutter (Android y web)"]
+    subgraph Telefono[" App Flutter (Android y web)"]
         UI["Presentación<br/>pantallas + ViewModels"] --> DOM["Dominio<br/>catálogo · planificador · hora pico"]
         UI --> DATA["Datos<br/>repositorios + caché local"]
         GPS["Seguimiento GPS<br/>(solo en el teléfono)"]
     end
-    subgraph Supabase["☁️ Supabase"]
+    subgraph Supabase[" Supabase"]
         DB[("PostgreSQL<br/>20 tablas · RLS · triggers")]
         AUTH["Auth"]
         ST["Storage<br/>fotos de unidades"]
@@ -226,7 +226,7 @@ flowchart LR
 
 ---
 
-## 🧰 Tecnologías y servicios gratuitos
+##  Tecnologías y servicios gratuitos
 
 | Servicio | Para qué | Plan |
 | --- | --- | --- |
@@ -241,7 +241,7 @@ flowchart LR
 
 ---
 
-## 🔒 Seguridad y privacidad
+##  Seguridad y privacidad
 
 - Contraseñas con **hash bcrypt** (Supabase Auth); la app nunca las guarda.
 - **Row Level Security** en las 20 tablas: cada quien solo puede leer y escribir lo que le corresponde.
@@ -252,7 +252,7 @@ flowchart LR
 
 ---
 
-## 🚀 Ejecutar el proyecto
+##  Ejecutar el proyecto
 
 > La guía completa (Supabase, Firebase, APIs, webhooks y GitHub) está en **[GUIA.md](GUIA.md)**.
 
@@ -274,7 +274,7 @@ flutter run --dart-define-from-file=config.json
 
 ---
 
-## 📁 Estructura del repositorio
+##  Estructura del repositorio
 
 ```
 lib/
@@ -298,10 +298,10 @@ docs/
 
 ---
 
-## 🙌 Créditos
+##  Créditos
 
 Mapa © colaboradores de [OpenStreetMap](https://www.openstreetmap.org/copyright) · Rutas a pie: [openrouteservice.org](https://openrouteservice.org) · Direcciones: [Nominatim](https://nominatim.org).
 
 <div align="center">
-<sub>Hecho en Dolores Hidalgo, Gto. 🇲🇽</sub>
+<sub>Hecho en Dolores Hidalgo, Gto. 🇲🇽 por: Jesus Omar Mendez Enriquez y Jesua Emmanuel Rico Pacheco </sub>
 </div>
