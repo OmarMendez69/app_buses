@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'core/theme/app_colors.dart';
-import 'presentation/pages/splash_page.dart';
+import 'core/app_colors.dart';
+import 'core/idioma.dart';
+import 'presentation/pages/acceso/splash_page.dart';
 import 'presentation/viewmodels/app_view_models.dart';
 
 class CamionesApp extends StatelessWidget {
@@ -11,16 +12,16 @@ class CamionesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Camiones Dolores',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: kFondo,
-        colorScheme: const ColorScheme.dark(primary: kAcento),
-        useMaterial3: true,
+    // Al cambiar de idioma se reconstruye toda la app.
+    return ListenableBuilder(
+      listenable: vms.idioma,
+      builder: (context, _) => MaterialApp(
+        key: ValueKey(Idioma.codigo),
+        title: 'Camiones Dolores',
+        debugShowCheckedModeBanner: false,
+        theme: temaApp(),
+        home: SplashPage(vms: vms),
       ),
-      home: SplashPage(vms: vms),
     );
   }
 }

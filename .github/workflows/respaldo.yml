@@ -1,0 +1,41 @@
+# Respaldo semanal de la base de datos (el plan gratuito de Supabase no incluye respaldos).
+# El archivo queda como "artifact" del workflow durante 90 días:
+# Actions → Respaldo semanal → la ejecución → Artifacts.
+name: Respaldo semanal
+
+on:
+  schedule:
+    - cron: "40 9 * * 0" # domingos, 3:40 a.m. hora del centro de México
+  workflow_dispatch:
+
+jobs:
+  respaldo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar cliente de PostgreSQL 17
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Exportar
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          fecha=$(date -u +%Y-%m-%d)
+          mkdir respaldo
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --schema=public --no-owner --no-privileges \
+            -f "respaldo/public_$fecha.sql"
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --data-only --table=auth.users --no-owner --no-privileges \
+            -f "respaldo/auth_users_$fecha.sql"
+          gzip respaldo/*.sql
+          ls -lh respaldo
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: respaldo-${{ github.run_id }}
+          path: respaldo/
+          retention-days: 90

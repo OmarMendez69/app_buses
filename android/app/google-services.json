@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "125615065204",
+    "project_id": "camiones-dolores",
+    "storage_bucket": "camiones-dolores.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:125615065204:android:0a50eac460bbb8109b2921",
+        "android_client_info": {
+          "package_name": "mx.dolores.camiones"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAytzhbHjSC6xyz-3TEpaSaDFSxKm4M9EI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

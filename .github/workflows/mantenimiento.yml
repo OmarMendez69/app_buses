@@ -1,0 +1,49 @@
+# Mantiene vivo el proyecto gratuito de Supabase (se pausa tras 7 días sin actividad)
+# y avisa por correo si el backend deja de responder (GitHub manda correo cuando un workflow falla).
+# Además, una vez por semana hace un commit pequeño: GitHub desactiva los workflows
+# programados de repositorios sin actividad durante 60 días.
+name: Mantenimiento diario
+
+on:
+  schedule:
+    - cron: "17 14 * * *" # todos los días, 8:17 a.m. hora del centro de México
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar la base de datos
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          codigo=$(curl -s -o respuesta.json -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/ruta?select=id_ruta&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "HTTP $codigo"
+          cat respuesta.json
+          if [ "$codigo" != "200" ]; then
+            echo "::error::Supabase no respondió bien. Revisa si el proyecto está pausado."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Commit semanal (los lunes)
+        run: |
+          if [ "$(date -u +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            mkdir -p docs/estado
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > docs/estado/ultimo_ping.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/estado/ultimo_ping.txt
+            git commit -m "Mantenimiento: ping semanal" || echo "Sin cambios"
+            git push
+          else
+            echo "Hoy no toca commit"
+          fi

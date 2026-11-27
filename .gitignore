@@ -46,3 +46,10 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Configuración local (llaves de Supabase)
+config.json
+
+# Llaves privadas de Firebase (nunca subir)
+*firebase-adminsdk*.json
+android/build/

@@ -1,102 +1,80 @@
 # Camiones Dolores
 
-## 1. Descripción breve
-
-App móvil hecha en Flutter para consultar las rutas de camiones cercanas, ver su próximo horario y reportar el paso de un camión. Usa datos de ejemplo (mock) y arquitectura por capas (`data` / `domain` / `presentation`) con MVVM.
+**Sistema de Información de Transporte** para el transporte urbano de Dolores Hidalgo, Gto.
+Responde con datos verificables: qué camión me lleva, dónde lo tomo, dónde me bajo, cada cuánto pasa y si hoy hay algún cambio.
 
 **Integrantes:** Jesús Omar Méndez Enríquez · Jesua Emmanuel Rico Pacheco
 
-## 2. Los 3 tipos de usuario y sus dashboards
+> Para instalar, configurar y publicar todo, sigue **[GUIA.md](GUIA.md)** paso a paso.
 
-| Usuario | Dashboard | Qué puede hacer |
-|---|---|---|
-| **Administrador** | Panel de administración | Gestiona las rutas: **agrega y edita** (nombre, color, frecuencia, activa). Ve métricas (usuarios, rutas activas, reportes) y todos los reportes. |
-| **Alumno** | Mapa + rutas cercanas | Busca rutas por destino, ve el próximo camión, reporta el paso de un camión y consulta reportes y su perfil (con reputación). |
-| **Visitante** | Rutas disponibles | Consulta las rutas y la hora pico, y puede reportar un camión y ver los reportes. |
+## Principios
 
-Los roles siguen el modelo de dominio del proyecto (tabla `Usuario`): el alumno y el visitante reportan, el admin gestiona rutas.
+1. **Dato verificable o nada.** Rutas, paradas y horarios los captura la administración con levantamiento de campo; cada dato tiene fuente y fecha.
+2. **Rangos honestos.** No hay GPS en las unidades, así que la app no promete "llega en 5 min": muestra frecuencias ("cada 10–15 min") y tiempos como rango.
+3. **La comunidad informa, no decide.** El tablón es comunitario y no altera ningún cálculo.
+4. **Lo oficial llega al instante.** Cualquier cambio del administrador se notifica por push en segundos.
+5. **Funciona sin cuenta y sin señal.** El catálogo se guarda en el teléfono y el planificador corre localmente.
 
-El dashboard se elige según el rol con el que se inicia sesión o se registra la persona.
+## Perfiles
 
-## 3. Manejo de estado elegido (y por qué)
+| Perfil | Dashboard | Qué puede hacer |
+| --- | --- | --- |
+| **Visitante** (sin cuenta) | Rutas disponibles | Consultar rutas, paradas, horarios y hora pico; planear viajes; seguir rutas y recibir avisos; leer el tablón |
+| **Usuario** | Mapa y rutas cercanas | Todo lo anterior + publicar, comentar y marcar "útil" en el tablón; viajes guardados sincronizados |
+| **Administrador** | Panel de administración (también en web) | Rutas, recorridos, horarios, paradas, lugares, avisos, días especiales, moderación, usuarios y bitácora |
 
-**`ChangeNotifier` + `ListenableBuilder` (patrón MVVM, sin paquetes externos).**
+El registro ya no permite elegir tipo: toda cuenta nueva es Usuario y solo un administrador asigna el rol de administrador.
 
-- Ya venía en el proyecto (`InicioViewModel`), así que seguimos la misma convención en toda la app.
-- Es el manejo de estado que trae Flutter de fábrica: no agrega dependencias y es fácil de explicar.
-- Se crea **un solo juego de ViewModels** en `main.dart` (`SesionViewModel`, `InicioViewModel`, `ReportesViewModel`, `RutasAdminViewModel`) y se pasa a las pantallas. Por eso el rol, los datos y las listas **persisten al navegar** entre pantallas mientras la app está abierta.
-- Para el tamaño de esta entrega (solo vista y validaciones) no se justifica Provider/Riverpod/Bloc.
+## Funciones principales
 
-## 4. Cómo ejecutar la app
+- Mapa real (OpenStreetMap) con rutas y paradas cercanas.
+- **Planificador**: rutas directas o con un transbordo. Como el camión se para donde le hacen la mano, el abordaje es el punto del recorrido más cercano, no solo la parada registrada.
+- **Estado del servicio**: en servicio y frecuencia, o "fuera de servicio · inicia 6:00", con calendario de días especiales.
+- **Hora pico** = horarios de alta demanda: entradas y salidas de escuelas, cambios de turno y tianguis cerca de la ruta.
+- **Avisos de servicio con push** instantáneo a quien sigue la ruta; los cambios de recorrido y horario se avisan solos.
+- **Avísame cuando llegue**: seguimiento con el GPS del propio teléfono y alarma 300 m antes de bajar.
+- Compartir viaje, último camión, viajes guardados con recordatorio, cómo reconocer el camión (foto y letrero), tarifas preferenciales, comparar contra caminar, "¿qué rutas pasan por aquí?", widget de Android, español e inglés.
+- **Tablón comunitario** con comentarios, "útil", denuncias y moderación.
 
-Requisitos: Flutter instalado y un emulador o dispositivo conectado.
+## Arquitectura
 
-```bash
-git clone <url-del-repo>
-cd <carpeta-del-repo>
-flutter pub get
-flutter run
+```
+App Flutter (Android + web)          Supabase (plan gratuito)
+ data / domain / presentation  ──▶   PostgreSQL: 20 tablas, RLS, triggers, RPC
+ MVVM con ChangeNotifier             Auth · Realtime · Storage
+ caché local (sin conexión)          Edge Functions ──▶ Firebase Cloud Messaging
+ planificador en el teléfono                         ──▶ OpenRouteService (a pie)
+                                                     ──▶ Nominatim (direcciones)
+GitHub Actions: mantenimiento diario, respaldo semanal, publicación web (GitHub Pages)
 ```
 
-Usuarios de prueba (contraseña `123456`):
+```
+lib/
+  core/          configuración, tema, idioma, geometría, tiempo, validaciones
+  domain/        entidades, catálogo, planificador, hora pico
+  data/          repositorios (Supabase) y caché local
+  servicios/     notificaciones, seguimiento GPS, widget
+  presentation/  viewmodels, navegación, widgets y pantallas (acceso, visitante, usuario, comun, admin)
+supabase/
+  migrations/    esquema, lógica y seguridad (probados en PostgreSQL)
+  functions/     enviar-push, ruta-a-pie, geocodificar
+  seed.sql       datos de ejemplo
+.github/workflows/  mantenimiento, respaldo, web
+```
 
-| Rol | Correo |
-|---|---|
-| Administrador | admin@camiones.com |
-| Alumno | alumno@camiones.com |
-| Visitante | visitante@camiones.com |
+## Ejecutar
 
-También se puede crear una cuenta nueva desde "Regístrate" eligiendo el rol.
+```bash
+flutter pub get
+flutter run --dart-define-from-file=config.json
+```
 
-## 5. Demostración al docente
+`config.json` (no se sube a GitHub; ver `config.example.json`):
 
-- Dispositivo/emulador usado: **Samsung Galaxy A55 5G (Android)**. Probamos la app instalándola y ejecutándola directamente en el celular desde Flutter.
+```json
+{ "SUPABASE_URL": "https://xxxx.supabase.co", "SUPABASE_ANON_KEY": "..." }
+```
 
+## Créditos de datos
 
-## 6. Screenshots
-
-### Splashscreen
-**Pantalla de carga inicial, antes de pasar al login**
-![Splash](screenshots/01-splash.png)
-
-### Autenticación
-**Inicio de sesión con validación de campos (errores visibles)**
-![Login](screenshots/02-login.png)
-
-**Registro de usuario con selección de rol (Alumno, Visitante o Administrador)**
-![Registro](screenshots/03-registro.png)
-
-### Dashboards
-**Dashboard del Administrador: métricas y gestión de rutas**
-![Dashboard Admin](screenshots/04-dashboard-admin.png)
-
-**Dashboard del Alumno: mapa, buscador de destino y rutas cercanas**
-![Dashboard Alumno](screenshots/05-dashboard-cliente.png)
-
-**Dashboard del Visitante: rutas disponibles y botón para reportar**
-![Dashboard Visitante](screenshots/06-dashboard-operador.png)
-
-### Listas
-**Lista principal: rutas cercanas con datos dinámicos**
-![Lista principal](screenshots/07-lista-principal.png)
-
-**Lista secundaria: reportes de camiones con su detalle**
-![Lista detalle](screenshots/08-lista-detalle.png)
-
-**Estado vacío: sin resultados al buscar un destino que no existe**
-![Estado vacío](screenshots/09-lista-vacia.png)
-
-### Formularios
-**Formulario de reporte de camión (Alumno y Visitante) con validación**
-![Formulario reporte](screenshots/10-formulario.png)
-
-**Formulario de ruta del Administrador (agregar y editar) con validación**
-![Formulario ruta](screenshots/13-formulario-ruta.png)
-
-### Evidencia funcional
-**La app corriendo en el Samsung Galaxy A55 5G**
-![Foto equipo](screenshots/11-foto-equipo.jpg)
-
-**Video del flujo de navegación: login → dashboard → lista → formulario**
-
-https://github.com/user-attachments/assets/5e867bff-b3cf-4f7e-9d2c-f705e4f7d07a
+Mapa © colaboradores de OpenStreetMap · Rutas a pie: openrouteservice.org · Direcciones: Nominatim.

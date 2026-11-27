@@ -1,0 +1,12 @@
+# Configuración mínima para la Supabase CLI.
+project_id = "camiones-dolores"
+
+[functions.enviar-push]
+# La llama el webhook de la base de datos, no la app: se protege con WEBHOOK_SECRET.
+verify_jwt = false
+
+[functions.ruta-a-pie]
+verify_jwt = true
+
+[functions.geocodificar]
+verify_jwt = true

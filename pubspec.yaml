@@ -1,19 +1,43 @@
 name: app_buses
-description: "A new Flutter project."
+description: "Camiones Dolores · Sistema de Información de Transporte de Dolores Hidalgo."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
-  sdk: ^3.13.2
+  sdk: ^3.6.0
 
 dependencies:
   flutter:
     sdk: flutter
 
+  # Backend: base de datos, autenticación, tiempo real, funciones y archivos
+  supabase_flutter: ^2.8.0
+
+  # Mapa con OpenStreetMap
+  flutter_map: ^8.1.0
+  latlong2: ^0.9.1
+
+  # Ubicación del teléfono (paradas cercanas y alarma de bajada)
+  geolocator: ^13.0.2
+
+  # Notificaciones push (Firebase Cloud Messaging) y locales
+  firebase_core: ^3.13.0
+  firebase_messaging: ^15.2.5
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+
+  # Guardado local (modo sin conexión, favoritos del visitante, idioma)
+  shared_preferences: ^2.3.3
+
+  # Widget de Android, compartir viaje, fotos y archivos GPX
+  home_widget: ^0.7.0
+  share_plus: ^10.1.4
+  image_picker: ^1.1.2
+  file_selector: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

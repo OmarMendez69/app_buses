@@ -1,38 +1,51 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/usuario.dart';
-import '../pages/dashboard_admin_page.dart';
-import '../pages/dashboard_visitante_page.dart';
-import '../pages/inicio_page.dart';
-import '../pages/login_page.dart';
+import '../../domain/entities/comunidad.dart';
+import '../pages/acceso/login_page.dart';
+import '../pages/admin/admin_shell.dart';
+import '../pages/usuario/usuario_shell.dart';
+import '../pages/visitante/visitante_shell.dart';
 import '../viewmodels/app_view_models.dart';
 
-/// Cada rol tiene su propio dashboard.
-Widget dashboardPorRol(Rol rol, AppViewModels vms) {
-  switch (rol) {
+/// Cada perfil tiene su propio dashboard.
+Widget dashboardPorRol(AppViewModels vms) {
+  switch (vms.sesion.rol) {
     case Rol.admin:
-      return DashboardAdminPage(vms: vms);
+      return AdminShell(vms: vms);
+    case Rol.usuario:
+      return UsuarioShell(vms: vms);
     case Rol.visitante:
-      return DashboardVisitantePage(vms: vms);
-    case Rol.alumno:
-      return InicioPage(vms: vms);
+      return VisitanteShell(vms: vms);
   }
 }
 
-/// Lleva al dashboard del usuario que inició sesión (borra el historial).
-void irADashboard(BuildContext context, AppViewModels vms) {
-  final rol = vms.sesion.rol;
-  if (rol == null) return;
+/// Lleva al dashboard del perfil actual (borra el historial).
+Future<void> irADashboard(BuildContext context, AppViewModels vms) async {
+  // Favoritos y viajes dependen de si hay cuenta o no.
+  vms.favoritos.cargar();
+  vms.viajes.cargar();
+  if (!context.mounted) return;
   Navigator.of(context).pushAndRemoveUntil(
-    MaterialPageRoute(builder: (_) => dashboardPorRol(rol, vms)),
+    MaterialPageRoute(builder: (_) => dashboardPorRol(vms)),
     (_) => false,
   );
 }
 
-void cerrarSesion(BuildContext context, AppViewModels vms) {
-  vms.sesion.cerrarSesion();
+Future<void> cerrarSesion(BuildContext context, AppViewModels vms) async {
+  await vms.seguimiento.detener();
+  await vms.sesion.cerrarSesion();
+  if (!context.mounted) return;
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(builder: (_) => LoginPage(vms: vms)),
     (_) => false,
   );
+}
+
+void abrir(BuildContext context, Widget pagina) =>
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => pagina));
+
+void avisar(BuildContext context, String mensaje) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(mensaje)));
 }
