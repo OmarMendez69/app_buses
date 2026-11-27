@@ -91,10 +91,13 @@ class _InicioMapaPageState extends State<InicioMapaPage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'publicar_inicio',
-        backgroundColor: kAcento,
+        backgroundColor: kSuperficie,
+        foregroundColor: kAmbar,
+        elevation: 2,
+        extendedPadding: const EdgeInsets.symmetric(horizontal: 14),
         onPressed: _reportar,
-        icon: const Icon(Icons.campaign_outlined),
-        label: Text(tx('Reportar', 'Report')),
+        icon: const Icon(Icons.campaign_outlined, size: 20),
+        label: Text(tx('Reportar', 'Report'), style: const TextStyle(fontSize: 13)),
       ),
       body: ListenableBuilder(
         listenable: Listenable.merge([vms.catalogo, vms.favoritos]),

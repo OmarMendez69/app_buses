@@ -128,7 +128,7 @@ class _HojaReporteState extends State<_HojaReporte> {
                     _parada = null;
                   }),
                 )
-              else if (ruta != null)
+              else
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Container(

@@ -130,6 +130,8 @@ class _RutaDetallePageState extends State<RutaDetallePage> {
                         child: Text(tx('Último servicio de hoy: ${textoHora(estado.ultimoServicio!)}', "Today's last service: ${textoHora(estado.ultimoServicio!)}"),
                             style: const TextStyle(color: kTextoSecundario)),
                       ),
+                    const SizedBox(height: 10),
+                    _botonAvisos(ruta.id),
                     for (final a in avisos) TarjetaAviso(aviso: a, ruta: ruta),
                     _reconocer(ruta, color),
                     _tarifas(ruta),
@@ -188,6 +190,35 @@ class _RutaDetallePageState extends State<RutaDetallePage> {
           ),
         );
       },
+    );
+  }
+
+  /// Seguir la ruta = recibir sus avisos. Antes solo era una estrella en la barra
+  /// superior y no se entendía que de eso dependían las notificaciones.
+  Widget _botonAvisos(int idRuta) {
+    final vms = widget.vms;
+    final sigue = vms.favoritos.sigue(idRuta);
+    Future<void> alternar() async {
+      await vms.favoritos.alternar(idRuta);
+      if (mounted) {
+        avisar(context, sigue
+            ? tx('Ya no recibirás avisos de esta ruta', "You won't get notices for this route anymore")
+            : tx('Listo: te avisaremos si esta ruta cambia', "Done: we'll notify you if this route changes"));
+      }
+    }
+
+    if (sigue) {
+      return OutlinedButton.icon(
+        onPressed: alternar,
+        icon: const Icon(Icons.notifications_active, color: kAmbar),
+        label: Text(tx('Recibes avisos de esta ruta · dejar de seguir', 'You get notices for this route · unfollow')),
+      );
+    }
+    return FilledButton.icon(
+      style: FilledButton.styleFrom(backgroundColor: kAcento, padding: const EdgeInsets.all(14)),
+      onPressed: alternar,
+      icon: const Icon(Icons.notifications_outlined),
+      label: Text(tx('Avisarme si esta ruta cambia', 'Notify me if this route changes')),
     );
   }
 

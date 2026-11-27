@@ -61,7 +61,7 @@ class _RegistroPageState extends State<RegistroPage> {
         if (mounted) Navigator.pop(context);
       }
     } catch (e) {
-      setState(() => _error = mensajeError(e));
+      if (mounted) setState(() => _error = mensajeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
     }

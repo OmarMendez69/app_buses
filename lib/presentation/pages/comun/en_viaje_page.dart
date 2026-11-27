@@ -5,6 +5,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/idioma.dart';
 import '../../../domain/entities/viaje.dart';
+import '../../../servicios/seguimiento.dart';
+import '../../navigation/navegacion.dart';
 import '../../viewmodels/app_view_models.dart';
 import '../../widgets/mapa.dart';
 
@@ -42,8 +44,14 @@ class _EnViajePageState extends State<EnViajePage> {
   }
 
   Future<void> _terminar() async {
-    await widget.vms.seguimiento.detener();
-    if (mounted) Navigator.pop(context);
+    final s = widget.vms.seguimiento;
+    final yaHabiaTerminado = !s.activo;
+    await s.detener();
+    if (!mounted) return;
+    if (!yaHabiaTerminado) {
+      avisar(context, tx('Viaje terminado. Ya no se usa tu ubicación.', 'Trip finished. Your location is no longer used.'));
+    }
+    Navigator.pop(context);
   }
 
   @override
@@ -51,15 +59,43 @@ class _EnViajePageState extends State<EnViajePage> {
     final s = widget.vms.seguimiento;
     final t = _buses[_tramo];
 
-    return PopScope(
-      onPopInvokedWithResult: (_, __) => s.detener(),
+    // ListenableBuilder afuera: canPop depende de si el seguimiento sigue activo.
+    return ListenableBuilder(
+      listenable: s,
+      builder: (context, _) => PopScope(
+      // Mientras el seguimiento está activo, salir pregunta primero: salir apaga la alarma.
+      canPop: !s.activo,
+      onPopInvokedWithResult: (salio, _) async {
+        if (salio) {
+          s.detener();
+          return;
+        }
+        final terminar = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(tx('¿Terminar el viaje?', 'End the trip?')),
+            content: Text(tx('Si sales de esta pantalla ya no te avisaremos cuando llegues a tu bajada.',
+                "If you leave this screen we won't alert you when you reach your stop.")),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tx('Seguir en el viaje', 'Stay on trip'))),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(tx('Terminar', 'End'), style: const TextStyle(color: kAcento)),
+              ),
+            ],
+          ),
+        );
+        if (terminar == true) await _terminar();
+      },
       child: Scaffold(
         appBar: AppBar(title: Text(tx('Viaje en curso', 'Trip in progress'))),
         body: ListenableBuilder(
           listenable: s,
           builder: (context, _) {
             final e = s.estado;
-            final geo = s.geo;
+            final tramo = s.tramoPuntos;
+            final llegaste = s.fin == FinSeguimiento.llegaste;
+            final ultimoTramo = _tramo >= _buses.length - 1;
             return Column(
               children: [
                 Expanded(
@@ -68,9 +104,9 @@ class _EnViajePageState extends State<EnViajePage> {
                     centro: e?.posicion ?? t.desde,
                     zoom: 16,
                     capas: [
-                      if (geo != null && geo.linea.tramo(t.avanceSube, t.avanceBaja).length >= 2)
+                      if (tramo.length >= 2)
                         PolylineLayer(polylines: [
-                          Polyline(points: geo.linea.tramo(t.avanceSube, t.avanceBaja), color: colorDesdeHex(t.ruta!.color), strokeWidth: 7),
+                          Polyline(points: tramo, color: colorDesdeHex(t.ruta!.color), strokeWidth: 7),
                         ]),
                       MarkerLayer(markers: [
                         marcadorIcono(t.hasta, Icons.flag, kAcento),
@@ -91,6 +127,16 @@ class _EnViajePageState extends State<EnViajePage> {
                       const SizedBox(height: 8),
                       if (s.error != null)
                         Text(s.error!, style: const TextStyle(color: Colors.redAccent))
+                      else if (llegaste)
+                        Text(
+                            ultimoTramo
+                                ? tx('Llegaste a tu bajada. El seguimiento se apagó.', 'You reached your stop. Tracking is off.')
+                                : tx('Llegaste a tu bajada. Cuando subas al siguiente camión, toca el botón.',
+                                    'You reached your stop. When you board the next bus, tap the button.'),
+                            style: const TextStyle(color: kVerde, fontSize: 16, fontWeight: FontWeight.bold))
+                      else if (s.fin == FinSeguimiento.tiempo)
+                        Text(tx('El seguimiento se apagó solo después de 2 horas.', 'Tracking turned off after 2 hours.'),
+                            style: const TextStyle(color: kTextoSecundario))
                       else if (e == null)
                         Text(tx('Buscando tu ubicación…', 'Finding your location…'), style: const TextStyle(color: kTextoSecundario))
                       else if (e.llegando)
@@ -122,7 +168,7 @@ class _EnViajePageState extends State<EnViajePage> {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _tramo < _buses.length - 1
+                          child: !ultimoTramo
                               ? FilledButton(
                                   style: FilledButton.styleFrom(backgroundColor: kAcento),
                                   onPressed: () {
@@ -134,7 +180,7 @@ class _EnViajePageState extends State<EnViajePage> {
                               : FilledButton(
                                   style: FilledButton.styleFrom(backgroundColor: kAcento),
                                   onPressed: _terminar,
-                                  child: Text(tx('Terminar', 'Finish')),
+                                  child: Text(s.activo ? tx('Terminar viaje', 'End trip') : tx('Cerrar', 'Close')),
                                 ),
                         ),
                       ]),
@@ -150,6 +196,7 @@ class _EnViajePageState extends State<EnViajePage> {
           },
         ),
       ),
+    ),
     );
   }
 }

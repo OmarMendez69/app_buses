@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       await widget.vms.sesion.iniciarSesion(_correo.text, _contrasena.text);
       if (mounted) await irADashboard(context, widget.vms);
     } catch (e) {
-      setState(() => _errorGeneral = mensajeError(e));
+      if (mounted) setState(() => _errorGeneral = mensajeError(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
     }

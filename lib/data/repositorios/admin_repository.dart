@@ -191,6 +191,10 @@ class AdminRepository {
     return (await q).length;
   }
 
+  /// Oculta una publicación del tablón (reportes falsos o spam). No se borra: queda para revisión.
+  Future<void> ocultarPublicacion(int id) =>
+      _db.from('publicacion').update({'estado': 'oculto'}).eq('id_publicacion', id);
+
   Future<void> resolverDenuncia(int id, bool procede) =>
       _db.rpc('resolver_denuncia', params: {'p_id_denuncia': id, 'p_procede': procede});
 

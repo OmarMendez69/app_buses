@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/app_colors.dart';
+import '../../../core/tiempo.dart';
 import '../../../core/validadores.dart';
 import '../../../data/repositorios/comunidad_repository.dart';
 import '../../../domain/entities/transporte.dart';
@@ -155,6 +156,7 @@ class _RutaFormPageState extends State<RutaFormPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            _pasos(),
             CampoTexto(controller: _nombre, etiqueta: 'Nombre (ej. Centro – UTNG)', icono: Icons.alt_route, validator: Validadores.requerido, maximo: 80),
             const TituloSeccion('Color en el mapa'),
             Wrap(spacing: 8, runSpacing: 8, children: [
@@ -205,7 +207,14 @@ class _RutaFormPageState extends State<RutaFormPage> {
               subtitle: const Text('Para activarla necesita un recorrido con trazado, 2 paradas y un horario.'),
               value: _activa,
               activeTrackColor: kAcento,
-              onChanged: (v) => setState(() => _activa = v),
+              onChanged: (v) {
+                final faltan = _faltantes();
+                if (v && faltan.isNotEmpty) {
+                  avisar(context, 'Aún no se puede activar: ${faltan.first}');
+                  return;
+                }
+                setState(() => _activa = v);
+              },
             ),
             const SizedBox(height: 10),
             FilledButton(
@@ -215,6 +224,79 @@ class _RutaFormPageState extends State<RutaFormPage> {
             ),
             if (_id != null) ..._recorridos(),
             const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Lo que impide activar la ruta (mismas reglas que valida la base de datos).
+  List<String> _faltantes() {
+    if (_id == null) return ['primero guarda los datos de la ruta'];
+    final geos = widget.vms.catalogo.cat.geosDeRuta(_id!);
+    if (geos.isEmpty) return ['agrega un recorrido (ida, vuelta o circuito)'];
+    final listo = geos.any((g) =>
+        g.recorrido.trazado.length >= 2 &&
+        g.recorrido.paradas.length >= 2 &&
+        TipoDia.values.any((td) => widget.vms.catalogo.cat.franjasDe(g.recorrido.id, td).isNotEmpty));
+    if (listo) return [];
+    return ['algún recorrido necesita trazado, al menos 2 paradas y un horario'];
+  }
+
+  /// Checklist para que el admin sepa qué le falta a la ruta.
+  Widget _pasos() {
+    final cat = widget.vms.catalogo.cat;
+    final geos = cat.geosDeRuta(_id ?? -1); // ruta nueva: lista vacía
+    final items = <(bool?, String)>[]; // true = hecho, false = falta (bloquea), null = recomendado
+    items.add((_id != null, _id == null ? 'Guarda los datos de la ruta (abajo, "Guardar ruta")' : 'Datos de la ruta guardados'));
+    items.add((geos.isNotEmpty, geos.isEmpty ? 'Agrega un recorrido (ida, vuelta o circuito)' : '${geos.length} recorrido(s)'));
+    for (final g in geos) {
+      final nombre = g.recorrido.sentido.etiqueta;
+      final pts = g.recorrido.trazado.length;
+      final par = g.recorrido.paradas.length;
+      items.add((pts >= 2, pts >= 2 ? '$nombre: trazado listo' : '$nombre: falta dibujar el trazado'));
+      items.add((par >= 2, par >= 2 ? '$nombre: $par paradas' : '$nombre: faltan paradas (mínimo 2, llevas $par)'));
+      final sinHorario = [for (final td in TipoDia.values) if (cat.franjasDe(g.recorrido.id, td).isEmpty) td];
+      if (sinHorario.length == TipoDia.values.length) {
+        items.add((false, '$nombre: falta el horario'));
+      } else if (sinHorario.isNotEmpty) {
+        items.add((null, '$nombre: sin horario en ${sinHorario.map((t) => t.etiqueta.toLowerCase()).join(' y ')} (si no hay servicio, está bien)'));
+      } else {
+        items.add((true, '$nombre: horario completo'));
+      }
+    }
+    final faltan = _faltantes();
+    items.add((_activa && faltan.isEmpty ? true : (faltan.isEmpty ? null : false),
+        _activa ? 'Ruta activa: la ve el público' : faltan.isEmpty ? 'Lista para activarse (enciende "Ruta activa" y guarda)' : 'Activar la ruta'));
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Pasos para publicar la ruta', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 6),
+            for (final (hecho, texto) in items)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(
+                    hecho == true ? Icons.check_circle : (hecho == false ? Icons.radio_button_unchecked : Icons.info_outline),
+                    size: 18,
+                    color: hecho == true ? kVerde : (hecho == false ? kTextoSecundario : kAmbar),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(texto, style: TextStyle(color: hecho == true ? null : kTextoSecundario))),
+                ]),
+              ),
+            if (_id != null)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text('El trazado, las paradas y el horario se editan en "Recorridos", al final.',
+                    style: TextStyle(color: kTextoSecundario, fontSize: 12)),
+              ),
           ],
         ),
       ),

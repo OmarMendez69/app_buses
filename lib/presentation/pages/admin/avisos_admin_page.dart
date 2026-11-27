@@ -94,7 +94,24 @@ class _AvisosAdminPageState extends State<AvisosAdminPage> {
 class AvisoFormPage extends StatefulWidget {
   final AppViewModels vms;
   final Aviso? aviso;
-  const AvisoFormPage({super.key, required this.vms, this.aviso});
+
+  /// Datos para llenar un aviso nuevo (p. ej. desde los reportes de la comunidad).
+  final int? idRutaInicial;
+  final TipoAviso? tipoInicial;
+  final String? tituloInicial;
+  final String? detalleInicial;
+  final Set<int> paradasIniciales;
+
+  const AvisoFormPage({
+    super.key,
+    required this.vms,
+    this.aviso,
+    this.idRutaInicial,
+    this.tipoInicial,
+    this.tituloInicial,
+    this.detalleInicial,
+    this.paradasIniciales = const {},
+  });
 
   @override
   State<AvisoFormPage> createState() => _AvisoFormPageState();
@@ -125,6 +142,12 @@ class _AvisoFormPageState extends State<AvisoFormPage> {
       _desde = a.vigenteDesde;
       _hasta = a.vigenteHasta;
       _notificar = false; // editar no vuelve a notificar
+    } else {
+      _ruta = widget.idRutaInicial;
+      _tipo = widget.tipoInicial ?? _tipo;
+      _titulo.text = widget.tituloInicial ?? '';
+      _detalle.text = widget.detalleInicial ?? '';
+      _paradas.addAll(widget.paradasIniciales);
     }
   }
 

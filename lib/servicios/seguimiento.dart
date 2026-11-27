@@ -34,9 +34,12 @@ class EstadoSeguimiento {
   });
 }
 
-/// "Avísame cuando llegue": sigue tu posición sobre el recorrido y
-/// suena/vibra unos 300 m antes de tu bajada. La ubicación no sale del teléfono.
-/// Se apaga sola al llegar o después de 2 horas.
+/// Por qué terminó el seguimiento (para decírselo al usuario).
+enum FinSeguimiento { llegaste, tiempo, manual }
+
+/// "Avísame cuando llegue": sigue tu posición sobre TU tramo del recorrido
+/// (de donde subes a donde bajas) y suena/vibra unos 300 m antes de tu bajada.
+/// La ubicación no sale del teléfono. Se apaga sola al llegar o después de 2 horas.
 class Seguimiento extends ChangeNotifier {
   StreamSubscription<Position>? _sub;
   Timer? _limite;
@@ -47,8 +50,19 @@ class Seguimiento extends ChangeNotifier {
   EstadoSeguimiento? estado;
   bool _alarmaDada = false;
   String? error;
+  FinSeguimiento? fin;
+
+  /// Solo el tramo del viaje. Proyectar sobre él (y no sobre todo el recorrido) evita
+  /// ubicarte en el regreso cuando la ruta va y vuelve por la misma calle.
+  Linea? _tramo;
+
+  /// Posición de cada parada intermedia, en metros desde donde subes.
+  List<double> _paradasTramo = const [];
 
   bool get activo => _sub != null;
+
+  /// Puntos del tramo para dibujarlo (también funciona en circuitos que dan la vuelta).
+  List<LatLng> get tramoPuntos => _tramo?.puntos ?? const [];
 
   static Future<bool> pedirPermiso() async {
     if (!await Geolocator.isLocationServiceEnabled()) return false;
@@ -70,6 +84,22 @@ class Seguimiento extends ChangeNotifier {
     _avanceBaja = avanceBaja;
     nombreBajada = bajada;
     _alarmaDada = false;
+    fin = null;
+    estado = null;
+
+    final total = g.linea.largo;
+    final circular = avanceBaja < avanceSube;
+    final puntos = circular
+        ? [...g.linea.tramo(avanceSube, total), ...g.linea.tramo(0, avanceBaja)]
+        : g.linea.tramo(avanceSube, avanceBaja);
+    _tramo = Linea(puntos.length >= 2 ? puntos : [g.linea.puntoEn(avanceSube), g.linea.puntoEn(avanceBaja)]);
+    final largo = _tramo!.largo;
+    final enTramo = <double>[];
+    for (final p in g.paradas) {
+      final d = circular && p.$2 < avanceSube ? p.$2 + total - avanceSube : p.$2 - avanceSube;
+      if (d > 1 && d < largo - 1) enTramo.add(d);
+    }
+    _paradasTramo = enTramo;
 
     final LocationSettings ajustes = defaultTargetPlatform == TargetPlatform.android && !kIsWeb
         ? AndroidSettings(
@@ -90,36 +120,35 @@ class Seguimiento extends ChangeNotifier {
         notifyListeners();
       },
     );
-    _limite = Timer(const Duration(hours: 2), detener);
+    _limite = Timer(const Duration(hours: 2), () => detener(motivo: FinSeguimiento.tiempo));
     notifyListeners();
   }
 
   void _alMoverse(Position p) {
     final g = geo;
-    if (g == null) return;
+    final tramo = _tramo;
+    if (g == null || tramo == null) return;
     final punto = LatLng(p.latitude, p.longitude);
-    final pr = g.linea.proyectar(punto);
+    final pr = tramo.proyectar(punto);
+    final restante = (tramo.largo - pr.avance).clamp(0.0, double.infinity);
+    final fuera = pr.distancia > 150;
 
-    final circular = _avanceBaja < _avanceSube;
-    double restante;
-    if (!circular) {
-      restante = _avanceBaja - pr.avance;
-    } else {
-      restante = pr.avance >= _avanceSube ? (g.linea.largo - pr.avance) + _avanceBaja : _avanceBaja - pr.avance;
-    }
-    final paradasTotales = g.paradasEntre(_avanceSube, _avanceBaja);
-    final paradasRestantes = restante <= 0 ? 0 : g.paradasEntre(pr.avance, _avanceBaja);
-    final minutos = g.minutosEntre(pr.avance, _avanceBaja);
-    final llegando = restante <= Config.avisoBajadaMetros;
+    // Minutos con los tiempos medidos de la ruta: se pasa el avance local a avance del recorrido.
+    final largoTotal = g.linea.largo;
+    final global = largoTotal == 0 ? 0.0 : (_avanceSube + pr.avance) % largoTotal;
+    final minutos = restante <= 0 ? 0 : g.minutosEntre(global, _avanceBaja);
 
+    // Para la alarma se tolera más desviación (300 m) por si el trazado no es exacto.
+    final cerca = pr.distancia <= 300;
+    final llegando = cerca && restante <= Config.avisoBajadaMetros;
     estado = EstadoSeguimiento(
       posicion: punto,
       avance: pr.avance,
-      metrosParaBajar: restante.clamp(0.0, double.infinity),
-      paradasRestantes: paradasRestantes,
-      paradasTotales: paradasTotales,
-      minutosRestantes: restante <= 0 ? 0 : minutos,
-      fueraDelRecorrido: pr.distancia > 150,
+      metrosParaBajar: restante,
+      paradasRestantes: _paradasTramo.where((d) => d > pr.avance).length,
+      paradasTotales: _paradasTramo.length,
+      minutosRestantes: minutos,
+      fueraDelRecorrido: fuera,
       llegando: llegando,
     );
     notifyListeners();
@@ -134,10 +163,12 @@ class Seguimiento extends ChangeNotifier {
         detalles: Notificaciones.viajeDetalles,
       );
     }
-    if (restante < -100) detener(); // ya pasó la bajada
+    // Llegaste: a menos de 40 m del final de tu tramo y sobre la ruta.
+    if (cerca && restante <= 40) detener(motivo: FinSeguimiento.llegaste);
   }
 
-  Future<void> detener() async {
+  Future<void> detener({FinSeguimiento motivo = FinSeguimiento.manual}) async {
+    if (_sub != null) fin = motivo;
     await _sub?.cancel();
     _sub = null;
     _limite?.cancel();

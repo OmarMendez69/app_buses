@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/app_colors.dart';
 import '../../../data/repositorios/comunidad_repository.dart';
+import '../../../domain/entities/comunidad.dart';
 import '../../navigation/navegacion.dart';
 import '../../viewmodels/app_view_models.dart';
 import '../../widgets/comunes.dart';
@@ -11,6 +12,7 @@ import 'calendario_page.dart';
 import 'lugares_admin_page.dart';
 import 'moderacion_page.dart';
 import 'paradas_admin_page.dart';
+import 'reportes_admin_page.dart';
 import 'ruta_form_page.dart';
 import 'usuarios_page.dart';
 
@@ -25,15 +27,28 @@ class AdminShell extends StatefulWidget {
 
 class _AdminShellState extends State<AdminShell> {
   late Future<Map<String, dynamic>> _metricas;
+  late Future<List<Publicacion>> _reportes;
 
   @override
   void initState() {
     super.initState();
     _metricas = widget.vms.admin.metricas();
+    _reportes = _consultaReportes();
   }
 
+  Future<List<Publicacion>> _consultaReportes() => widget.vms.comunidad
+      .publicaciones(
+        categorias: CategoriaPublicacion.reportes,
+        desde: DateTime.now().subtract(const Duration(hours: 24)),
+        limite: 500,
+      )
+      .catchError((_) => <Publicacion>[]);
+
   Future<void> _refrescar() async {
-    setState(() => _metricas = widget.vms.admin.metricas());
+    setState(() {
+      _metricas = widget.vms.admin.metricas();
+      _reportes = _consultaReportes();
+    });
     await widget.vms.catalogo.refrescar();
   }
 
@@ -90,6 +105,28 @@ class _AdminShellState extends State<AdminShell> {
                       ],
                     ),
                     const SizedBox(height: 10),
+                    FutureBuilder<List<Publicacion>>(
+                      future: _reportes,
+                      builder: (context, r) {
+                        final lista = r.data ?? const <Publicacion>[];
+                        final rutas = lista.map((p) => p.idRuta).toSet().length;
+                        return Card(
+                          color: lista.isEmpty ? null : kAmbar.withValues(alpha: 0.12),
+                          child: ListTile(
+                            leading: Icon(Icons.report_outlined, color: lista.isEmpty ? kTextoSecundario : kAmbar),
+                            title: Text(!r.hasData
+                                ? 'Reportes de la comunidad…'
+                                : lista.isEmpty
+                                    ? 'Sin reportes en las últimas 24 h'
+                                    : '${lista.length} reporte(s) en las últimas 24 h'),
+                            subtitle: Text(lista.isEmpty ? 'Retrasos, desvíos, unidades llenas…' : 'En $rutas ruta(s) · toca para revisarlos'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _ir(ReportesAdminPage(vms: vms)),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 6),
                     Text('Publicaciones en el tablón (7 días): ${v('publicaciones_7d')}', style: const TextStyle(color: kTextoSecundario)),
                     if (sinRevisar > 0)
                       Card(
@@ -166,6 +203,7 @@ class _AdminShellState extends State<AdminShell> {
             item(Icons.place_outlined, 'Lugares y sus horarios', () => LugaresAdminPage(vms: vms)),
             item(Icons.campaign_outlined, 'Avisos de servicio', () => AvisosAdminPage(vms: vms)),
             item(Icons.event_outlined, 'Días especiales', () => CalendarioPage(vms: vms)),
+            item(Icons.report_outlined, 'Reportes de la comunidad', () => ReportesAdminPage(vms: vms)),
             item(Icons.gavel_outlined, 'Moderación del tablón', () => ModeracionPage(vms: vms)),
             item(Icons.people_outline, 'Usuarios', () => UsuariosPage(vms: vms)),
             item(Icons.history, 'Bitácora', () => BitacoraPage(vms: vms)),
